@@ -4,47 +4,51 @@ import {
   CodeLens,
   Range,
   Command,
-  window,
-  SnippetString,
+  Uri,
+  workspace,
 } from "vscode";
+import { resolve, join } from "path";
+import findLinksInDoc from "./findLinksInDoc";
+import { lstatSync } from "fs";
 
-const linkRegex = /\[\[.*\]\]/g;
-const findLinks = (doc: string) => {
-  const splitDoc = doc.split(/\r?\n/);
-  const result: any = [];
+const LINK_REGEX = /^(\.{1,2}[\/\\])?(.+?)$/;
 
-  splitDoc.forEach((line, lineNumber) => {
-    const match = line.match(linkRegex);
-    if (match) {
-      result.push({ lN: lineNumber, str: match[0].replace(/(\[|\])/g, "") });
-    }
-  });
-
-  return result;
-};
-
-class MyCodeLensProvider implements CodeLensProvider {
+class CommentLinkProvider implements CodeLensProvider {
   // Each provider requires a provideCodeLenses function which will give the various documents
   // the code lenses
   async provideCodeLenses(document: TextDocument): Promise<CodeLens[]> {
-    // Define where the CodeLens will exist
-    console.log(`Parsing ${document.uri}`);
+    const workspacePath =
+      workspace.getWorkspaceFolder(document.uri)?.uri?.fsPath ?? "";
+    const basePath = join(document.uri.fsPath, "..");
 
-    const matches = findLinks(document.getText());
-    console.log(matches);
+    const matches = findLinksInDoc(document.getText());
 
     if (document.uri.scheme === "output") {
       return [];
     }
 
-    // Define what command we want to trigger when activating the CodeLens
-
     let lenses: CodeLens[] = [];
     matches.forEach((match: any) => {
-      let thisMatchRange = new Range(match.lN, 0, match.lN, 0);
+      const components = LINK_REGEX.exec(match.str)!;
+      const filePath = components[2];
+      const relativeFolder = components[1];
+
+      const thisMatchRange = new Range(match.lN, 0, match.lN, 0);
+      const fullPath = relativeFolder
+        ? resolve(basePath, relativeFolder, filePath)
+        : resolve(workspacePath, filePath);
+      const fileUri = Uri.file(fullPath);
+      const exists = lstatSync(fullPath).isFile();
+
+      // Don't show the codelens if the file doesn't exist
+      if (!exists) {
+        return;
+      }
+
       let c: Command = {
-        command: "extension.addConsoleLog",
+        command: "vscode.open",
         title: `Open ${match.str}`,
+        arguments: [fileUri],
       };
       lenses.push(new CodeLens(thisMatchRange, c));
     });
@@ -53,19 +57,4 @@ class MyCodeLensProvider implements CodeLensProvider {
   }
 }
 
-export async function addConsoleLog() {
-  let lineNumStr = await window.showInputBox({
-    prompt: "Line Number",
-  });
-
-  let lineNum = Number(lineNumStr);
-
-  let insertionLocation = new Range(lineNum, 0, lineNum, 0);
-  let snippet = new SnippetString("console.log($1);\n");
-
-  if (window && window.activeTextEditor) {
-    window.activeTextEditor.insertSnippet(snippet, insertionLocation);
-  }
-}
-
-export default MyCodeLensProvider;
+export default CommentLinkProvider;

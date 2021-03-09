@@ -1,70 +1,56 @@
-# commentlinks README
+# Readme
 
-This is the README for your extension "commentlinks". After writing up a brief description, we recommend including the following sections.
+Easily link from comments to external files or documentation. 
 
 ## Features
+![gif](images/commentlinks_demo.gif)
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+* Within a comment, add a link by enclosing it in double "[" brackets ie 
+> [[docs/readme.md]]
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+* Searches from the root of your workspace, but it also works with relative paths!
+> [[./docs/folder/readme.md]]
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Currently, this extension only supports files where comments are delimited by `/*`, `//`, `*`, `<!--` or `#`. So, it should work with Javascript/Typescript, Python, HTML files and any other languages .
+
+Currently you can only add one link per line. If you need multiple links, add each one on a different line.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+No settings to change. Just enable and enjoy! 
+CodeLens hints will display above any comment with a valid filename.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+As it parses line-by-line, it won't properly detect when a link is within a multi-line comment unless the line starts with one of the delimiters. For instance, 
+
+
+*This won't work!*
+```typescript
+/*
+  This link won't work [[docs/readme.md]]
+*/
+```
+
+A simple workaround is just to add a comment delimiter to the beginning of every line with a link, regardless of whether it's required or not. 
+
+```typescript
+/*
+ * This link is working now! [[docs/readme.md]]
+ */
+```
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
+Initial release of CommentLinks
 
-### 1.0.1
 
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+## Future Roadmap
+- Ability to link to a specific heading in a markdown file
+- Tooling to help with refactoring - when files are renamed / moved, updating their comment links
+- Better comment detection
+- Tests
