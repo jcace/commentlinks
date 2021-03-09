@@ -1,4 +1,4 @@
-# Readme
+# CommentLinks
 
 Easily link from comments to external files or documentation. 
 

@@ -2,7 +2,11 @@
   "name": "commentlinks",
   "displayName": "CommentLinks",
   "description": "A simple extension to link to files from comments",
+  "repository": {
+    "url": "https://github.com/jcace/commentlinks"
+  },
   "icon": "images/icon.png",
+  "publisher": "isotechnics",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.54.0"
